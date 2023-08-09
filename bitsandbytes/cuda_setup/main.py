@@ -127,7 +127,8 @@ class CUDASetup:
 
         package_dir = Path(__file__).parent.parent
         binary_path = package_dir / self.binary_name
-
+        
+        print('binary_path: ' + str(binary_path))
         try:
             if not binary_path.exists():
                 self.add_log_entry(f"CUDA SETUP: Required library version not found: {binary_name}. Maybe you need to compile it from source?")
@@ -153,7 +154,7 @@ class CUDASetup:
                 self.lib = ct.cdll.LoadLibrary(binary_path)
             else:
                 self.add_log_entry(f"CUDA SETUP: Loading binary {binary_path}...")
-                self.lib = ct.cdll.LoadLibrary(binary_path)
+                self.lib = ct.cdll.LoadLibrary(str(binary_path))
         except Exception as ex:
             self.add_log_entry(str(ex))
 
@@ -332,7 +333,9 @@ def evaluate_cuda_setup():
         cuda_setup.add_log_entry(('Welcome to bitsandbytes. For bug reports, please run\n\npython -m bitsandbytes\n\n'),
               ('and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues'))
         cuda_setup.add_log_entry('='*80)
-    if not torch.cuda.is_available(): return 'libbitsandbytes_cpu.so', None, None, None
+    if torch.cuda.is_available():
+        return "cuda_setup\libbitsandbytes_cuda116.dll", None, None, None, None
+    elif not torch.cuda.is_available(): return 'libbitsandbytes_cpu.so', None, None, None
 
     cudart_path = determine_cuda_runtime_lib_path()
     ccs = get_compute_capabilities()
